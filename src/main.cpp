@@ -1,6 +1,6 @@
 #include <Arduino.h>
 
-#define PIN_napajeni_optosenzoru 3
+#define PIN_napajeni_optosenzoru 12
 #define PIN_SV 13
 
 int litry = 0;
@@ -9,13 +9,14 @@ boolean posledniStavSV;
 
 void setup()
 {
-  Serial.begin(115200);
+  Serial.begin(9600);
   pinMode(PIN_napajeni_optosenzoru, OUTPUT);
   pinMode(PIN_SV, INPUT);
 }
 
-void OptoPower()
+void OdecetVody()
 {
+  digitalWrite(PIN_napajeni_optosenzoru, HIGH);
   // přečtěte vstupní pin tlačítka:
   StavSV = digitalRead(PIN_SV);
 
@@ -28,8 +29,8 @@ void OptoPower()
       // jestliže je současný stav HIGH, tlačítko přešlo
       //z off na on:
       litry++;
-      Serial.println("on");
-      Serial.print("number of button pushes:  ");
+      Serial.println("impuls");
+      Serial.print("Pocet litrů od startu:  ");
       Serial.println(litry);
     }
     else
@@ -42,10 +43,11 @@ void OptoPower()
   // uložte současný stav jako „poslední stav“,
   //abyste ho mohli v příští smyčce použít
   posledniStavSV = StavSV;
-  
+  digitalWrite(PIN_napajeni_optosenzoru, LOW);
 }
 
 void loop()
 {
-  OptoPower();
+OdecetVody();
+ESP.deepSleep(5e6);
 }
