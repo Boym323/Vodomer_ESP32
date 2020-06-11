@@ -1,17 +1,17 @@
 #include <Arduino.h>
 
 #define PIN_napajeni_optosenzoru 12
-#define PIN_SV 13
+#define PIN_SV 27
 
-int litry = 0;
-boolean StavSV;
-boolean posledniStavSV;
+RTC_DATA_ATTR size_t litry = 0;
+RTC_DATA_ATTR size_t StavSV;
+RTC_DATA_ATTR size_t posledniStavSV;
 
 void setup()
 {
-  Serial.begin(9600);
+ Serial.begin(115200);
   pinMode(PIN_napajeni_optosenzoru, OUTPUT);
-  pinMode(PIN_SV, INPUT);
+  pinMode(PIN_SV, INPUT_PULLUP);
 }
 
 void OdecetVody()
@@ -49,5 +49,8 @@ void OdecetVody()
 void loop()
 {
 OdecetVody();
-ESP.deepSleep(5e6);
+Serial.println(millis());
+esp_sleep_enable_timer_wakeup(1000000);
+esp_deep_sleep_start();
+
 }
