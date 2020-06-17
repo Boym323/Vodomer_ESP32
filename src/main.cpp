@@ -2,9 +2,14 @@
 #include <WiFi.h>
 #include <PubSubClient.h>
 
-const char *ssid = "WiFi_name";
+const char *ssid = "SWS_free";
 const char *password = "password";
-const char *mqtt_server = "192.168.0.2";
+const char *mqttServer = "5.104.16.71";
+const int mqttPort = 1883;
+const char *mqttUser = "mqtt username";
+const char *mqttPassword = "mqtt password";
+WiFiClient espClient;
+PubSubClient client(espClient);
 
 #define PIN_napajeni_optosenzoru 12
 #define PIN_SV 27
@@ -56,11 +61,11 @@ void OdecetVody()
 
 void wifi()
 {
-  Serial.begin(115200);
+  WiFi.begin(ssid); //  WiFi.begin(ssid, password);
+
   Serial.println();
   Serial.print("Connecting to ");
   Serial.println(ssid);
-  WiFi.begin(ssid, password); //  WiFi.begin(ssid, password);
 
   while (WiFi.status() != WL_CONNECTED)
   {
@@ -74,10 +79,35 @@ void wifi()
   Serial.println(WiFi.localIP());
   Serial.print("RSSI: ");
   Serial.println(WiFi.RSSI());
-  WiFiClient espClient;
-  PubSubClient client(mqtt_server, 1883, espClient);
-  client.publish("domov/temperature1", String(30).c_str(), true);
-  client.publish("outTopic", "hello world");
+  client.setServer(mqttServer, mqttPort);
+
+  while (!client.connected())
+  {
+    Serial.println("Connecting to MQTT...");
+
+    if (client.connect("ESP32Client", mqttUser, mqttPassword))
+    {
+
+      Serial.println("connected");
+    }
+    else
+    {
+
+      Serial.print("failed with state ");
+      Serial.print(client.state());
+      delay(2000);
+    }
+  }
+  int waitmqqt = 50;
+  client.publish("domov/Hello", "hello world");
+  delay(waitmqqt);
+  client.publish("domov/Cislo30", String(30).c_str(), true);
+  delay(waitmqqt);
+  client.publish("domov/PocetProbuzeni", String(PocetProbuzeni).c_str(), true);
+  delay(waitmqqt);
+  client.publish("domov/SpotrebaSV", String(SpotrebaSV).c_str(), true);
+  delay(waitmqqt);
+  client.publish("domov/SpotrebaTV", String(WiFi.RSSI()).c_str(), true);
 }
 
 void loop()
